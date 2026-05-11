@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+@theme {
+  --color-tesla-red: #cc0000;
+  --color-tesla-dark: #171a20;
+}

@@ -1,0 +1,79 @@
+# ====== .NET ======
+bin/
+obj/
+out/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+*.dbmdl
+*.dbproj.schemaview
+*.jfm
+*.pfx
+*.publishsettings
+project.lock.json
+project.fragment.lock.json
+artifacts/
+**/Properties/launchSettings.json
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+*.opencover.xml
+
+# ====== Azure Functions ======
+local.settings.json
+.azurefunctions/
+azurite/
+__azurite_db*.json
+__blobstorage__/
+__queuestorage__/
+__tablestorage__/
+
+# ====== Node / Vite / PWA ======
+node_modules/
+dist/
+dist-ssr/
+.vite/
+.eslintcache
+.parcel-cache/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+coverage/
+.nyc_output/
+
+# ====== Vitest / Playwright ======
+.playwright/
+playwright-report/
+test-results/
+
+# ====== Env / secrets ======
+.env
+.env.*
+!.env.example
+*.local
+secrets.json
+
+# ====== IDE ======
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ====== Azure / Deployment ======
+*.azurePubxml
+*.pubxml
+*.pubxml.user
+PublishProfiles/
+.azure/

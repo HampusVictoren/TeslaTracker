@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /a)",
+      "PowerShell(npm install --prefix frontend 2>&1)"
+    ]
+  }
+}
