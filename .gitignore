@@ -22,10 +22,11 @@ coverage/
 *.coveragexml
 *.opencover.xml
 
-# ====== Azure Functions ======
+# ====== Azure Functions / Azurite ======
 local.settings.json
 .azurefunctions/
 azurite/
+.azurite/
 __azurite_db*.json
 __blobstorage__/
 __queuestorage__/

@@ -8,7 +8,12 @@
     <PackageReference Include="Azure.Data.Tables" Version="12.11.0" />
     <PackageReference Include="Azure.Identity" Version="1.21.0" />
     <PackageReference Include="Azure.Security.KeyVault.Keys" Version="4.10.0" />
-    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.6.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.8" />
     <PackageReference Include="WebPush" Version="1.0.13" />
   </ItemGroup>
 
@@ -16,6 +21,11 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <UserSecretsId>83c7989b-86f1-4bd5-a980-b5ff980e7fc3</UserSecretsId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="TeslaTracker.Infrastructure.Tests" />
+  </ItemGroup>
 
 </Project>
