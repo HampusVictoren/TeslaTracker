@@ -2,7 +2,12 @@ using Azure.Data.Tables;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using TeslaTracker.Application.Abstractions;
+using TeslaTracker.Application.Notifications.EventHandlers;
+using TeslaTracker.Application.Notifications.Ports;
+using TeslaTracker.Application.Orders.Queries;
 using TeslaTracker.Application.Tesla;
 using TeslaTracker.Application.Tokens;
 using TeslaTracker.Domain.Notifications;
@@ -10,6 +15,7 @@ using TeslaTracker.Domain.Orders;
 using TeslaTracker.Domain.Orders.Events;
 using TeslaTracker.Infrastructure.Crypto;
 using TeslaTracker.Infrastructure.DomainEvents;
+using TeslaTracker.Infrastructure.Notifications;
 using TeslaTracker.Infrastructure.RateLimit;
 using TeslaTracker.Infrastructure.Storage;
 using TeslaTracker.Infrastructure.Storage.Projections;
@@ -28,6 +34,7 @@ public static class DependencyInjection
         services.AddOptions<TeslaApiOptions>().Bind(configuration.GetSection(TeslaApiOptions.SectionName));
         services.AddOptions<CryptoOptions>().Bind(configuration.GetSection(CryptoOptions.SectionName));
         services.AddOptions<KeyVaultOptions>().Bind(configuration.GetSection(KeyVaultOptions.SectionName));
+        services.AddOptions<NotificationsOptions>().Bind(configuration.GetSection(NotificationsOptions.SectionName));
 
         services.AddSingleton<IClock, SystemClock>();
         services.AddScoped<IAggregateTracker, AggregateTracker>();
@@ -37,6 +44,8 @@ public static class DependencyInjection
         services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IPushChannelRepository, PushChannelRepository>();
         services.AddScoped<IRateLimiter, TableRateLimiter>();
+        services.AddScoped<IOwnerAuthorizer, OwnerAuthorizer>();
+        services.AddScoped<IOrderHistoryReader, OrderHistoryReader>();
 
         services.AddSingleton<TeslaSnapshotTranslator>();
         services.AddHttpClient<TeslaOwnerApiClient>()
@@ -53,6 +62,13 @@ public static class DependencyInjection
         services.AddScoped<IDomainEventHandler<DeliveryWindowChanged>>(sp => sp.GetRequiredService<OrderEventHistoryProjection>());
         services.AddScoped<IDomainEventHandler<OrderStateChanged>>(sp => sp.GetRequiredService<OrderEventHistoryProjection>());
         services.AddScoped<IDomainEventHandler<OrderArchived>>(sp => sp.GetRequiredService<OrderEventHistoryProjection>());
+
+        services.AddScoped<OrderPushDispatcher>();
+        services.AddScoped<IDomainEventHandler<VinAssigned>>(sp => sp.GetRequiredService<OrderPushDispatcher>());
+        services.AddScoped<IDomainEventHandler<DeliveryWindowChanged>>(sp => sp.GetRequiredService<OrderPushDispatcher>());
+        services.AddScoped<IDomainEventHandler<OrderStateChanged>>(sp => sp.GetRequiredService<OrderPushDispatcher>());
+
+        services.AddScoped<IDomainEventHandler<OrderArchived>, OrderArchivedPushCleanup>();
 
         return services;
     }
@@ -73,6 +89,26 @@ public static class DependencyInjection
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
         services.AddSingleton(new TableServiceClient(connectionString));
+        return services;
+    }
+
+    public static IServiceCollection AddPushNotifier(this IServiceCollection services)
+    {
+        services.AddScoped<IPushNotifier>(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<NotificationsOptions>>().Value;
+            if (options.IsConfigured)
+            {
+                return new WebPushNotifier(
+                    Options.Create(options),
+                    sp.GetRequiredService<ILogger<WebPushNotifier>>());
+            }
+
+            var logger = sp.GetRequiredService<ILogger<LoggingPushNotifier>>();
+            logger.LogWarning(
+                "Notifications:Vapid* not configured — falling back to LoggingPushNotifier. Pushes will be logged, not sent.");
+            return new LoggingPushNotifier(logger);
+        });
         return services;
     }
 }
