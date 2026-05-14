@@ -69,7 +69,7 @@ public class RegisterOrderTrackingHandlerTests
     [Fact]
     public async Task Returns_Failure_When_Order_Already_Actively_Tracked()
     {
-        var existingOrder = Order.Register(OrderFactory.AnOrderId(), OrderFactory.ASecret(), OrderFactory.ASnapshot(), _clock.UtcNow);
+        var existingOrder = Order.Register(OrderFactory.AnOrderId(), OrderFactory.ASecret(), OrderFactory.AViewToken(), OrderFactory.ASnapshot(), _clock.UtcNow);
         _orders.FindAsync(Arg.Any<OrderId>(), Arg.Any<CancellationToken>()).Returns(existingOrder);
 
         var command = new RegisterOrderTrackingCommand("RN123456789", "token", "1.2.3.4");
@@ -109,7 +109,8 @@ public class RegisterOrderTrackingHandlerTests
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.Value.Should().Be("RN123456789");
+        result.Value.OrderId.Value.Should().Be("RN123456789");
+        result.Value.ViewTokenPlaintext.Should().NotBeNullOrWhiteSpace();
 
         await _tokenProtector.Received(1).ProtectAsync("rotated-token", Arg.Any<CancellationToken>());
         await _orders.Received(1).AddAsync(Arg.Any<Order>(), Arg.Any<CancellationToken>());
@@ -119,7 +120,7 @@ public class RegisterOrderTrackingHandlerTests
     [Fact]
     public async Task Reactivates_Archived_Order_On_Repeat_Registration()
     {
-        var archived = Order.Register(OrderFactory.AnOrderId(), OrderFactory.ASecret(), OrderFactory.ASnapshot(), _clock.UtcNow);
+        var archived = Order.Register(OrderFactory.AnOrderId(), OrderFactory.ASecret(), OrderFactory.AViewToken(), OrderFactory.ASnapshot(), _clock.UtcNow);
         archived.Stop(_clock.UtcNow);
         archived.ClearPendingEvents();
 

@@ -12,6 +12,8 @@ internal sealed class OrderEntity : ITableEntity
 
     public byte[] TrackingSecretCipher { get; set; } = [];
     public string TrackingSecretKeyId { get; set; } = string.Empty;
+    public string ViewTokenHash { get; set; } = string.Empty;
+    public string ViewTokenSalt { get; set; } = string.Empty;
     public string CurrentSnapshotJson { get; set; } = string.Empty;
     public string CurrentSnapshotHash { get; set; } = string.Empty;
     public DateTimeOffset LastSyncedAt { get; set; }

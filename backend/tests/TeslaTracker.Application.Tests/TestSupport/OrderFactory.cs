@@ -10,6 +10,8 @@ internal static class OrderFactory
     public static TrackingSecret ASecret(string keyId = "kv-key-1") =>
         TrackingSecret.Create(new byte[] { 0x01, 0x02, 0x03 }, keyId).Value;
 
+    public static ViewToken AViewToken() => ViewToken.Issue().Token;
+
     public static OrderSnapshot ASnapshot(
         Vin? vin = null,
         OrderState state = OrderState.OrderPlaced,

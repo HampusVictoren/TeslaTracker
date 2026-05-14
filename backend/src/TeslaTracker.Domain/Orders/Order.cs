@@ -10,6 +10,7 @@ public sealed class Order : AggregateRoot
 
     public OrderId Id { get; }
     public TrackingSecret Secret { get; private set; }
+    public ViewToken ViewToken { get; private set; }
     public OrderSnapshot CurrentSnapshot { get; private set; }
     public DateTimeOffset LastSyncedAt { get; private set; }
     public int ConsecutiveFailures { get; private set; }
@@ -19,6 +20,7 @@ public sealed class Order : AggregateRoot
     private Order(
         OrderId id,
         TrackingSecret secret,
+        ViewToken viewToken,
         OrderSnapshot currentSnapshot,
         DateTimeOffset lastSyncedAt,
         int consecutiveFailures,
@@ -27,6 +29,7 @@ public sealed class Order : AggregateRoot
     {
         Id = id;
         Secret = secret;
+        ViewToken = viewToken;
         CurrentSnapshot = currentSnapshot;
         LastSyncedAt = lastSyncedAt;
         ConsecutiveFailures = consecutiveFailures;
@@ -34,18 +37,25 @@ public sealed class Order : AggregateRoot
         CreatedAt = createdAt;
     }
 
-    public static Order Register(OrderId id, TrackingSecret secret, OrderSnapshot initialSnapshot, DateTimeOffset now)
+    public static Order Register(
+        OrderId id,
+        TrackingSecret secret,
+        ViewToken viewToken,
+        OrderSnapshot initialSnapshot,
+        DateTimeOffset now)
     {
         ArgumentNullException.ThrowIfNull(id);
         ArgumentNullException.ThrowIfNull(secret);
+        ArgumentNullException.ThrowIfNull(viewToken);
         ArgumentNullException.ThrowIfNull(initialSnapshot);
 
-        return new Order(id, secret, initialSnapshot, now, 0, true, now);
+        return new Order(id, secret, viewToken, initialSnapshot, now, 0, true, now);
     }
 
     public static Order Rehydrate(
         OrderId id,
         TrackingSecret secret,
+        ViewToken viewToken,
         OrderSnapshot currentSnapshot,
         DateTimeOffset lastSyncedAt,
         int consecutiveFailures,
@@ -54,10 +64,14 @@ public sealed class Order : AggregateRoot
     {
         ArgumentNullException.ThrowIfNull(id);
         ArgumentNullException.ThrowIfNull(secret);
+        ArgumentNullException.ThrowIfNull(viewToken);
         ArgumentNullException.ThrowIfNull(currentSnapshot);
 
-        return new Order(id, secret, currentSnapshot, lastSyncedAt, consecutiveFailures, isActive, createdAt);
+        return new Order(id, secret, viewToken, currentSnapshot, lastSyncedAt, consecutiveFailures, isActive, createdAt);
     }
+
+    public bool VerifyViewToken(string? plaintextCandidate) =>
+        ViewToken.Verify(plaintextCandidate);
 
     public void ApplySnapshot(OrderSnapshot newSnapshot, DateTimeOffset now)
     {
@@ -127,9 +141,14 @@ public sealed class Order : AggregateRoot
     public void Stop(DateTimeOffset now) =>
         ArchiveInternal(ArchiveReason.UserRequested, now);
 
-    public void Reactivate(TrackingSecret newSecret, OrderSnapshot newSnapshot, DateTimeOffset now)
+    public void Reactivate(
+        TrackingSecret newSecret,
+        ViewToken newViewToken,
+        OrderSnapshot newSnapshot,
+        DateTimeOffset now)
     {
         ArgumentNullException.ThrowIfNull(newSecret);
+        ArgumentNullException.ThrowIfNull(newViewToken);
         ArgumentNullException.ThrowIfNull(newSnapshot);
 
         if (IsActive)
@@ -138,6 +157,7 @@ public sealed class Order : AggregateRoot
         }
 
         Secret = newSecret;
+        ViewToken = newViewToken;
         CurrentSnapshot = newSnapshot;
         LastSyncedAt = now;
         ConsecutiveFailures = 0;

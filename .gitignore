@@ -27,6 +27,7 @@ local.settings.json
 .azurefunctions/
 azurite/
 .azurite/
+AzuriteConfig/
 __azurite_db*.json
 __blobstorage__/
 __queuestorage__/

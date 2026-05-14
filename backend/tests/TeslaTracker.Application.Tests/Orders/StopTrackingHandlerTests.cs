@@ -31,7 +31,7 @@ public class StopTrackingHandlerTests
     [Fact]
     public async Task Archives_Active_Order_With_UserRequested_Reason()
     {
-        var order = Order.Register(OrderFactory.AnOrderId(), OrderFactory.ASecret(), OrderFactory.ASnapshot(), _clock.UtcNow);
+        var order = Order.Register(OrderFactory.AnOrderId(), OrderFactory.ASecret(), OrderFactory.AViewToken(), OrderFactory.ASnapshot(), _clock.UtcNow);
         _orders.FindAsync(Arg.Any<OrderId>(), Arg.Any<CancellationToken>()).Returns(order);
 
         var result = await CreateHandler().HandleAsync(new StopTrackingCommand("RN123456789"), CancellationToken.None);

@@ -100,7 +100,8 @@ public sealed class RegisterAndSyncOrderTests : IClassFixture<AzuriteFixture>, I
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.Value.Should().Be(orderId);
+        result.Value.OrderId.Value.Should().Be(orderId);
+        result.Value.ViewTokenPlaintext.Should().NotBeNullOrWhiteSpace();
 
         var orderTable = _azurite.ServiceClient.GetTableClient(TeslaTrackerTables.Orders);
         var stored = await orderTable.GetEntityAsync<OrderEntity>(PartitionKeys.Active, orderId);

@@ -45,7 +45,7 @@ public class SyncOrderWithTeslaHandlerTests
     [Fact]
     public async Task Marks_Token_Revoked_When_Tesla_Returns_Unauthorized()
     {
-        var order = Order.Register(OrderFactory.AnOrderId(), OrderFactory.ASecret(), OrderFactory.ASnapshot(), _clock.UtcNow);
+        var order = Order.Register(OrderFactory.AnOrderId(), OrderFactory.ASecret(), OrderFactory.AViewToken(), OrderFactory.ASnapshot(), _clock.UtcNow);
         _orders.FindAsync(Arg.Any<OrderId>(), Arg.Any<CancellationToken>()).Returns(order);
         _tesla.FetchOrderAsync(Arg.Any<OrderId>(), Arg.Any<TeslaCredential>(), Arg.Any<CancellationToken>())
             .Returns(Result<TeslaSyncResult>.Failure("Tesla.Unauthorized", "Token expired."));
@@ -61,7 +61,7 @@ public class SyncOrderWithTeslaHandlerTests
     [Fact]
     public async Task Records_Sync_Failure_On_Transient_Tesla_Error()
     {
-        var order = Order.Register(OrderFactory.AnOrderId(), OrderFactory.ASecret(), OrderFactory.ASnapshot(), _clock.UtcNow);
+        var order = Order.Register(OrderFactory.AnOrderId(), OrderFactory.ASecret(), OrderFactory.AViewToken(), OrderFactory.ASnapshot(), _clock.UtcNow);
         _orders.FindAsync(Arg.Any<OrderId>(), Arg.Any<CancellationToken>()).Returns(order);
         _tesla.FetchOrderAsync(Arg.Any<OrderId>(), Arg.Any<TeslaCredential>(), Arg.Any<CancellationToken>())
             .Returns(Result<TeslaSyncResult>.Failure("Tesla.Unavailable", "Service unavailable."));
@@ -75,7 +75,7 @@ public class SyncOrderWithTeslaHandlerTests
     [Fact]
     public async Task Applies_New_Snapshot_And_Rotates_Secret_On_Success()
     {
-        var order = Order.Register(OrderFactory.AnOrderId(), OrderFactory.ASecret(), OrderFactory.ASnapshot(hash: "h1"), _clock.UtcNow);
+        var order = Order.Register(OrderFactory.AnOrderId(), OrderFactory.ASecret(), OrderFactory.AViewToken(), OrderFactory.ASnapshot(hash: "h1"), _clock.UtcNow);
         _orders.FindAsync(Arg.Any<OrderId>(), Arg.Any<CancellationToken>()).Returns(order);
 
         var newSnapshot = OrderFactory.ASnapshot(vin: OrderFactory.AVin(), hash: "h2");

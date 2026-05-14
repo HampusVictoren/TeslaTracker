@@ -28,7 +28,7 @@ public class OrderRepositoryTests : IClassFixture<AzuriteFixture>
         var id = OrderId.Create(orderId).Value;
         var secret = TrackingSecret.Create(new byte[] { 0xAA, 0xBB }, "kv-key").Value;
         var snapshot = new OrderSnapshot(null, DeliveryWindow.Unknown(), "M3", OrderState.OrderPlaced, "h1");
-        return Order.Register(id, secret, snapshot, Now);
+        return Order.Register(id, secret, ViewToken.Issue().Token, snapshot, Now);
     }
 
     [RequiresAzuriteFact]

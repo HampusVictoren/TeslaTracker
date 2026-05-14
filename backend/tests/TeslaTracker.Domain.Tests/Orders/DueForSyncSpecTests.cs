@@ -13,8 +13,9 @@ public class DueForSyncSpecTests
     {
         var id = OrderId.Create("RN123456789").Value;
         var secret = TrackingSecret.Create(new byte[] { 1, 2, 3 }, "kv-key").Value;
+        var viewToken = ViewToken.Issue().Token;
         var snapshot = new OrderSnapshot(null, DeliveryWindow.Unknown(), "Model Y", OrderState.OrderPlaced, "h1");
-        return Order.Rehydrate(id, secret, snapshot, syncedAt, 0, isActive: true, syncedAt);
+        return Order.Rehydrate(id, secret, viewToken, snapshot, syncedAt, 0, isActive: true, syncedAt);
     }
 
     [Fact]
