@@ -17,7 +17,7 @@ public class OrderMapperTests
         var vin = Vin.Create("5YJYGDEE0LF000001").Value;
         var window = DeliveryWindow.Create(new DateOnly(2026, 6, 1), new DateOnly(2026, 6, 30), "Juni 2026").Value;
         var snapshot = new OrderSnapshot(vin, window, "Model Y", OrderState.InProduction, "h-original");
-        return Order.Register(id, secret, snapshot, Now);
+        return Order.Register(id, secret, ViewToken.Issue().Token, snapshot, Now);
     }
 
     [Fact]
@@ -76,7 +76,7 @@ public class OrderMapperTests
         var id = OrderId.Create("RN123456789").Value;
         var secret = TrackingSecret.Create(new byte[] { 9, 9 }, "k").Value;
         var snapshot = new OrderSnapshot(null, DeliveryWindow.Unknown(), "M3", OrderState.OrderPlaced, "h");
-        var order = Order.Register(id, secret, snapshot, Now);
+        var order = Order.Register(id, secret, ViewToken.Issue().Token, snapshot, Now);
 
         var rehydrated = OrderMapper.ToDomain(OrderMapper.ToEntity(order));
 

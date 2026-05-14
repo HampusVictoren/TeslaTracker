@@ -15,6 +15,8 @@ internal static class OrderMapper
             RowKey = order.Id.Value,
             TrackingSecretCipher = order.Secret.Cipher.ToArray(),
             TrackingSecretKeyId = order.Secret.KeyId,
+            ViewTokenHash = order.ViewToken.Hash,
+            ViewTokenSalt = order.ViewToken.Salt,
             CurrentSnapshotJson = SnapshotJson.Serialize(order.CurrentSnapshot),
             CurrentSnapshotHash = order.CurrentSnapshot.RawHash,
             LastSyncedAt = order.LastSyncedAt,
@@ -43,11 +45,19 @@ internal static class OrderMapper
                 $"OrderEntity har trasig TrackingSecret för '{entity.RowKey}': {secretResult.Error.Message}");
         }
 
+        var viewTokenResult = ViewToken.Rehydrate(entity.ViewTokenHash, entity.ViewTokenSalt);
+        if (viewTokenResult.IsFailure)
+        {
+            throw new InvalidOperationException(
+                $"OrderEntity har trasig ViewToken för '{entity.RowKey}': {viewTokenResult.Error.Message}");
+        }
+
         var snapshot = SnapshotJson.Deserialize(entity.CurrentSnapshotJson);
 
         return Order.Rehydrate(
             orderIdResult.Value,
             secretResult.Value,
+            viewTokenResult.Value,
             snapshot,
             entity.LastSyncedAt,
             entity.ConsecutiveFailures,
